@@ -1,4 +1,4 @@
-package com.lanetbase.knowledgebase.ui
+package com.amos_tech_code.knowledgebase.ui
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.animateContentSize
@@ -63,9 +63,28 @@ fun KnowledgeBaseApp(
     var selectedTab by remember { mutableIntStateOf(0) }
     var userPoints by remember { mutableIntStateOf(0) }
     var dailyStreak by remember { mutableIntStateOf(0) }
+    var hasClaimedDaily by remember { mutableStateOf(false) }
     val visitedItems = remember { mutableStateListOf<Int>() }
     val favorites = remember { mutableStateListOf<Int>() }
     val completedQuizzes = remember { mutableStateListOf<Int>() }
+
+    // Daily Reward Dialog
+    if (!hasClaimedDaily) {
+        AlertDialog(
+            onDismissRequest = { hasClaimedDaily = true },
+            title = { Text("🌅 Daily Bonus!") },
+            text = { Text("Welcome back! Here's 50 XP to start your day.") },
+            confirmButton = {
+                Button(onClick = {
+                    userPoints += 50
+                    dailyStreak += 1
+                    hasClaimedDaily = true
+                }) {
+                    Text("Claim 50 XP")
+                }
+            }
+        )
+    }
 
     Column(
         modifier = modifier.fillMaxSize()
@@ -226,6 +245,40 @@ fun ExploreTab(
             .fillMaxSize()
             .padding(16.dp)
     ) {
+        // Daily Featured Discovery
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.tertiaryContainer
+            )
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    "✨ Featured Discovery",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.tertiary
+                )
+                Text(
+                    "The Internet's Weight",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    "Did you know the entire internet weighs about as much as a strawberry?",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Button(
+                    onClick = { /* Jump to item */ },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
+                ) {
+                    Text("Read Full Story (+20 XP)")
+                }
+            }
+        }
+
         // Categories Scroll
         LazyRow(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -745,6 +798,27 @@ fun DidYouKnowTab(
                         textAlign = TextAlign.Center
                     )
                 }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Button(
+                onClick = { onPointsEarned(5) },
+                modifier = Modifier.weight(1f),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
+            ) {
+                Text("⭐ Collect Fact")
+            }
+            OutlinedButton(
+                onClick = { onPointsEarned(2) },
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("📤 Share")
             }
         }
 

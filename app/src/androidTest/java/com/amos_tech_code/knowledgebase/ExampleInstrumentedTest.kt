@@ -1,4 +1,4 @@
-package com.lanetbase.knowledgebase
+package com.amos_tech_code.knowledgebase
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4

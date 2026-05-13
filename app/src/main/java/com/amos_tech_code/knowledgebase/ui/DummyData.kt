@@ -1,4 +1,4 @@
-package com.lanetbase.knowledgebase.ui
+package com.amos_tech_code.knowledgebase.ui
 
 // Data classes
 data class KnowledgeItem(

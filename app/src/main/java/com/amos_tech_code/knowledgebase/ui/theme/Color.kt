@@ -1,4 +1,4 @@
-package com.lanetbase.knowledgebase.ui.theme
+package com.amos_tech_code.knowledgebase.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

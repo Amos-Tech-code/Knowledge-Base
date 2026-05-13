@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "com.lanetbase.knowledgebase"
+    namespace = "com.amos_tech_code.knowledgebase"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.lanetbase.knowledgebase"
+        applicationId = "com.amos_tech_code.knowledgebase"
         minSdk = 24
         targetSdk = 36
         versionCode = 1
