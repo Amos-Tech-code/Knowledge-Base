@@ -28,3 +28,17 @@
 -keep class * extends androidx.work.ListenableWorker {
     <init>(android.content.Context, androidx.work.WorkerParameters);
 }
+
+# Fix for Firebase Invalid component registrar warnings
+-keep class com.google.firebase.components.ComponentRegistrar { *; }
+-keep class com.google.firebase.installations.FirebaseInstallationsKtxRegistrar {
+    public <init>();
+}
+-keep class com.google.firebase.auth.ktx.FirebaseAuthLegacyRegistrar {
+    public <init>();
+}
+-keep class com.google.firebase.analytics.ktx.FirebaseAnalyticsLegacyRegistrar {
+    public <init>();
+}
+-keep class com.google.firebase.** { *; }
+-keepattributes *Annotation*, Signature, InnerClasses
