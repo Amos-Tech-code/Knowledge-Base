@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -34,6 +33,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
@@ -41,8 +41,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -55,30 +55,32 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
 fun KnowledgeBaseApp(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    viewModel: KnowledgeViewModel = viewModel()
 ) {
     var selectedTab by remember { mutableIntStateOf(0) }
-    var userPoints by remember { mutableIntStateOf(0) }
-    var dailyStreak by remember { mutableIntStateOf(0) }
-    var hasClaimedDaily by remember { mutableStateOf(false) }
-    val visitedItems = remember { mutableStateListOf<Int>() }
-    val favorites = remember { mutableStateListOf<Int>() }
-    val completedQuizzes = remember { mutableStateListOf<Int>() }
+    val userPoints by viewModel.userPoints.collectAsStateWithLifecycle()
+    val dailyStreak by viewModel.dailyStreak.collectAsStateWithLifecycle()
+    val hasClaimedDaily by viewModel.hasClaimedDaily.collectAsStateWithLifecycle()
+    
+    val visitedItems = viewModel.visitedItems
+    val favorites = viewModel.favorites
+    val completedQuizzes = viewModel.completedQuizzes
 
     // Daily Reward Dialog
     if (!hasClaimedDaily) {
         AlertDialog(
-            onDismissRequest = { hasClaimedDaily = true },
+            onDismissRequest = { viewModel.dismissDailyDialog() },
             title = { Text("🌅 Daily Bonus!") },
             text = { Text("Welcome back! Here's 50 XP to start your day.") },
             confirmButton = {
                 Button(onClick = {
-                    userPoints += 50
-                    dailyStreak += 1
-                    hasClaimedDaily = true
+                    viewModel.claimDailyReward()
                 }) {
                     Text("Claim 50 XP")
                 }
@@ -87,7 +89,8 @@ fun KnowledgeBaseApp(
     }
 
     Column(
-        modifier = modifier.fillMaxSize()
+        modifier = modifier
+            .fillMaxSize()
     ) {
         // Enhanced Header with Gamification
         HeaderSection(
@@ -131,23 +134,22 @@ fun KnowledgeBaseApp(
         when (selectedTab) {
             0 -> ExploreTab(
                 knowledgeItems = DummyData.knowledgeItems,
-                onPointsEarned = { userPoints += it },
+                onPointsEarned = { viewModel.earnPoints(it) },
                 visitedItems = visitedItems,
-                favorites = favorites
+                favorites = favorites,
+                onItemVisited = { viewModel.markAsVisited(it) },
+                onToggleFavorite = { viewModel.toggleFavorite(it) }
             )
             1 -> QuizTab(
                 quizzes = DummyData.quizzes,
-                onPointsEarned = { userPoints += it },
                 completedQuizzes = completedQuizzes,
-                onQuizCompleted = { quizId ->
-                    if (!completedQuizzes.contains(quizId)) {
-                        completedQuizzes.add(quizId)
-                    }
+                onQuizCompleted = { quizId, points ->
+                    viewModel.completeQuiz(quizId, points)
                 }
             )
             2 -> DidYouKnowTab(
                 funFacts = DummyData.funFacts,
-                onPointsEarned = { userPoints += it }
+                onPointsEarned = { viewModel.earnPoints(it) }
             )
             3 -> StatsTab(
                 userPoints = userPoints,
@@ -226,8 +228,10 @@ fun HeaderSection(
 fun ExploreTab(
     knowledgeItems: List<KnowledgeItem>,
     onPointsEarned: (Int) -> Unit,
-    visitedItems: MutableList<Int>,
-    favorites: MutableList<Int>
+    visitedItems: List<Int>,
+    favorites: List<Int>,
+    onItemVisited: (Int) -> Unit,
+    onToggleFavorite: (Int) -> Unit
 ) {
     var selectedCategory by remember { mutableStateOf("All") }
     var showFavoritesOnly by remember { mutableStateOf(false) }
@@ -244,6 +248,7 @@ fun ExploreTab(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
+            .verticalScroll(rememberScrollState())
     ) {
         // Daily Featured Discovery
         Card(
@@ -330,30 +335,24 @@ fun ExploreTab(
         Spacer(modifier = Modifier.height(8.dp))
 
         // Knowledge Items
-        LazyColumn(
+        Column(
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(filteredItems) { item ->
-                InteractiveKnowledgeCard(
-                    item = item,
-                    isFavorite = favorites.contains(item.id),
-                    isVisited = visitedItems.contains(item.id),
-                    onFavoriteClick = {
-                        if (favorites.contains(item.id)) {
-                            favorites.remove(item.id)
-                        } else {
-                            favorites.add(item.id)
-                            onPointsEarned(5)
+            filteredItems.forEach { item ->
+                key(item.id) {
+                    InteractiveKnowledgeCard(
+                        item = item,
+                        isFavorite = favorites.contains(item.id),
+                        isVisited = visitedItems.contains(item.id),
+                        onFavoriteClick = {
+                            onToggleFavorite(item.id)
+                        },
+                        onItemClick = {
+                            selectedItem = item
+                            onItemVisited(item.id)
                         }
-                    },
-                    onItemClick = {
-                        selectedItem = item
-                        if (!visitedItems.contains(item.id)) {
-                            visitedItems.add(item.id)
-                            onPointsEarned(10)
-                        }
-                    }
-                )
+                    )
+                }
             }
         }
     }
@@ -551,9 +550,8 @@ fun KnowledgeDetailDialog(
 @Composable
 fun QuizTab(
     quizzes: List<Quiz>,
-    onPointsEarned: (Int) -> Unit,
-    completedQuizzes: MutableList<Int>,
-    onQuizCompleted: (Int) -> Unit
+    completedQuizzes: List<Int>,
+    onQuizCompleted: (Int, Int) -> Unit
 ) {
     var currentQuizIndex by remember { mutableIntStateOf(0) }
     var selectedAnswer by remember { mutableStateOf<Int?>(null) }
@@ -572,11 +570,14 @@ fun QuizTab(
     ) {
         // Progress indicator - FIXED: removed lambda
         LinearProgressIndicator(
-            progress = (currentQuizIndex + 1) / quizzes.size.toFloat(),
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(8.dp)
-                .clip(RoundedCornerShape(4.dp))
+        progress = { (currentQuizIndex + 1) / quizzes.size.toFloat() },
+        modifier = Modifier
+                        .fillMaxWidth()
+                        .height(8.dp)
+                        .clip(RoundedCornerShape(4.dp)),
+        color = ProgressIndicatorDefaults.linearColor,
+        trackColor = ProgressIndicatorDefaults.linearTrackColor,
+        strokeCap = ProgressIndicatorDefaults.LinearStrokeCap,
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -685,8 +686,7 @@ fun QuizTab(
                         showResult = true
 
                         if (correct && !isCompleted) {
-                            onPointsEarned(currentQuiz.points)
-                            onQuizCompleted(currentQuiz.id)
+                            onQuizCompleted(currentQuiz.id, currentQuiz.points)
                         }
                     }
                 },
@@ -759,7 +759,8 @@ fun DidYouKnowTab(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(16.dp)
+            .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Card(
@@ -876,13 +877,13 @@ fun StatsTab(
     val nextLevelPoints = level * 100
     val progressToNextLevel = (userPoints % 100) / 100f
 
-    LazyColumn(
+    Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(16.dp)
+            .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        item {
             // Level Card
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -918,9 +919,7 @@ fun StatsTab(
                     )
                 }
             }
-        }
 
-        item {
             // Stats Grid
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -939,9 +938,7 @@ fun StatsTab(
                 StatCard("⭐", "Favorites", "${favorites.size} items", Modifier.weight(1f))
                 StatCard("📝", "Quizzes", "${completedQuizzes.size} done", Modifier.weight(1f))
             }
-        }
 
-        item {
             // Achievements
             Card(
                 modifier = Modifier.fillMaxWidth()
@@ -988,9 +985,7 @@ fun StatsTab(
                     )
                 }
             }
-        }
 
-        item {
             // Fun fact about their stats
             Card(
                 colors = CardDefaults.cardColors(
@@ -1008,7 +1003,6 @@ fun StatsTab(
                     style = MaterialTheme.typography.bodyLarge
                 )
             }
-        }
     }
 }
 
