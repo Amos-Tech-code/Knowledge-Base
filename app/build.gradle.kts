@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.google.services)
     id("org.jlleitschuh.gradle.ktlint")
+    id("io.gitlab.arturbosch.detekt")
 }
 
 android {
@@ -77,6 +78,11 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
+
+    // Detekt plugins for additional rules
+    detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.23.7")
+    detektPlugins("io.gitlab.arturbosch.detekt:detekt-rules-libraries:1.23.7")
+    detektPlugins("com.twitter.compose.rules:detekt:0.0.26")
 }
 
 // Bump version
@@ -129,5 +135,48 @@ ktlint {
     filter {
         exclude("**/generated/**")
         exclude("**/build/**")
+    }
+}
+
+// Detekt configuration
+detekt {
+    // Version of Detekt that will be used
+    toolVersion = "1.23.7"
+
+    // Builds the AST in parallel. Rules are always executed in parallel.
+    parallel = true
+
+    // Define the detekt configuration files
+    config.setFrom(files("$projectDir/../detekt-config.yml"))
+
+    // Adds the baseline file for suppressing known issues
+    baseline = file("$projectDir/detekt-baseline.xml")
+
+    // Turns on all the rules
+    allRules = false
+
+    // Fail build on any finding
+    ignoreFailures = false
+
+    // Android specific setup
+    buildUponDefaultConfig = true
+}
+
+// Configure detekt tasks
+tasks.withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
+    jvmTarget = "11"
+
+    // Exclude build and generated directories
+    exclude("**/build/**", "**/generated/**", "**/resources/**")
+
+    // Include all Kotlin and script files
+    include("**/*.kt", "**/*.kts")
+
+    reports {
+        html.required.set(true)
+        xml.required.set(true)
+        txt.required.set(true)
+        sarif.required.set(true)
+        md.required.set(true)
     }
 }
