@@ -28,10 +28,10 @@ import com.google.firebase.auth.FirebaseAuth
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
+
         // Track the daily visit for the Play Store 14-day requirement
         DailyTracker.recordDailyVisit(this)
-        
+
         // Schedule daily reminders
         ReminderWorker.scheduleDailyReminder(this)
 
@@ -43,29 +43,30 @@ class MainActivity : ComponentActivity() {
                 val context = LocalContext.current
 
                 // Request notification permission for Android 13+
-                val launcher = rememberLauncherForActivityResult(
-                    ActivityResultContracts.RequestPermission()
-                ) { isGranted ->
-                    // Handle permission result if needed
-                }
+                val launcher =
+                    rememberLauncherForActivityResult(
+                        ActivityResultContracts.RequestPermission(),
+                    ) { isGranted ->
+                        // Handle permission result if needed
+                    }
 
                 LaunchedEffect(Unit) {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                         if (ContextCompat.checkSelfPermission(
                                 context,
-                                Manifest.permission.POST_NOTIFICATIONS
+                                Manifest.permission.POST_NOTIFICATIONS,
                             ) != PackageManager.PERMISSION_GRANTED
                         ) {
                             launcher.launch(Manifest.permission.POST_NOTIFICATIONS)
                         }
                     }
                 }
-                
+
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     NavHost(
                         navController = navController,
                         startDestination = if (currentUser != null) "main" else "login",
-                        modifier = Modifier.padding(innerPadding)
+                        modifier = Modifier.padding(innerPadding),
                     ) {
                         composable("login") {
                             LoginScreen(
@@ -74,7 +75,7 @@ class MainActivity : ComponentActivity() {
                                     navController.navigate("main") {
                                         popUpTo("login") { inclusive = true }
                                     }
-                                }
+                                },
                             )
                         }
                         composable("main") {

@@ -61,13 +61,13 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 @Composable
 fun KnowledgeBaseApp(
     modifier: Modifier = Modifier,
-    viewModel: KnowledgeViewModel = viewModel()
+    viewModel: KnowledgeViewModel = viewModel(),
 ) {
     var selectedTab by remember { mutableIntStateOf(0) }
     val userPoints by viewModel.userPoints.collectAsStateWithLifecycle()
     val dailyStreak by viewModel.dailyStreak.collectAsStateWithLifecycle()
     val hasClaimedDaily by viewModel.hasClaimedDaily.collectAsStateWithLifecycle()
-    
+
     val visitedItems = viewModel.visitedItems
     val favorites = viewModel.favorites
     val completedQuizzes = viewModel.completedQuizzes
@@ -84,80 +84,85 @@ fun KnowledgeBaseApp(
                 }) {
                     Text("Claim 50 XP")
                 }
-            }
+            },
         )
     }
 
     Column(
-        modifier = modifier
-            .fillMaxSize()
+        modifier =
+            modifier
+                .fillMaxSize(),
     ) {
         // Enhanced Header with Gamification
         HeaderSection(
             userPoints = userPoints,
-            dailyStreak = dailyStreak
+            dailyStreak = dailyStreak,
         )
 
         // Tab Row
         TabRow(
             selectedTabIndex = selectedTab,
             containerColor = MaterialTheme.colorScheme.surface,
-            contentColor = MaterialTheme.colorScheme.primary
+            contentColor = MaterialTheme.colorScheme.primary,
         ) {
             Tab(
                 selected = selectedTab == 0,
                 onClick = { selectedTab = 0 },
                 text = { Text("Explore") },
-                icon = { Text("🔍") }
+                icon = { Text("🔍") },
             )
             Tab(
                 selected = selectedTab == 1,
                 onClick = { selectedTab = 1 },
                 text = { Text("Daily Quiz") },
-                icon = { Text("📝") }
+                icon = { Text("📝") },
             )
             Tab(
                 selected = selectedTab == 2,
                 onClick = { selectedTab = 2 },
                 text = { Text("Did You Know?") },
-                icon = { Text("💡") }
+                icon = { Text("💡") },
             )
             Tab(
                 selected = selectedTab == 3,
                 onClick = { selectedTab = 3 },
                 text = { Text("Stats") },
-                icon = { Text("📊") }
+                icon = { Text("📊") },
             )
         }
 
         // Content based on selected tab
         when (selectedTab) {
-            0 -> ExploreTab(
-                knowledgeItems = DummyData.knowledgeItems,
-                onPointsEarned = { viewModel.earnPoints(it) },
-                visitedItems = visitedItems,
-                favorites = favorites,
-                onItemVisited = { viewModel.markAsVisited(it) },
-                onToggleFavorite = { viewModel.toggleFavorite(it) }
-            )
-            1 -> QuizTab(
-                quizzes = DummyData.quizzes,
-                completedQuizzes = completedQuizzes,
-                onQuizCompleted = { quizId, points ->
-                    viewModel.completeQuiz(quizId, points)
-                }
-            )
-            2 -> DidYouKnowTab(
-                funFacts = DummyData.funFacts,
-                onPointsEarned = { viewModel.earnPoints(it) }
-            )
-            3 -> StatsTab(
-                userPoints = userPoints,
-                dailyStreak = dailyStreak,
-                visitedItems = visitedItems,
-                favorites = favorites,
-                completedQuizzes = completedQuizzes
-            )
+            0 ->
+                ExploreTab(
+                    knowledgeItems = DummyData.knowledgeItems,
+                    onPointsEarned = { viewModel.earnPoints(it) },
+                    visitedItems = visitedItems,
+                    favorites = favorites,
+                    onItemVisited = { viewModel.markAsVisited(it) },
+                    onToggleFavorite = { viewModel.toggleFavorite(it) },
+                )
+            1 ->
+                QuizTab(
+                    quizzes = DummyData.quizzes,
+                    completedQuizzes = completedQuizzes,
+                    onQuizCompleted = { quizId, points ->
+                        viewModel.completeQuiz(quizId, points)
+                    },
+                )
+            2 ->
+                DidYouKnowTab(
+                    funFacts = DummyData.funFacts,
+                    onPointsEarned = { viewModel.earnPoints(it) },
+                )
+            3 ->
+                StatsTab(
+                    userPoints = userPoints,
+                    dailyStreak = dailyStreak,
+                    visitedItems = visitedItems,
+                    favorites = favorites,
+                    completedQuizzes = completedQuizzes,
+                )
         }
     }
 }
@@ -165,39 +170,42 @@ fun KnowledgeBaseApp(
 @Composable
 fun HeaderSection(
     userPoints: Int,
-    dailyStreak: Int
+    dailyStreak: Int,
 ) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer
-        )
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .padding(8.dp),
+        colors =
+            CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+            ),
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     text = "🏆",
                     fontSize = 24.sp,
-                    modifier = Modifier.animateContentSize()
+                    modifier = Modifier.animateContentSize(),
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Column {
                     Text(
                         text = "$userPoints XP",
                         style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
                     )
                     Text(
                         text = "Knowledge Points",
-                        style = MaterialTheme.typography.bodySmall
+                        style = MaterialTheme.typography.bodySmall,
                     )
                 }
             }
@@ -205,18 +213,18 @@ fun HeaderSection(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     text = "🔥",
-                    fontSize = 24.sp
+                    fontSize = 24.sp,
                 )
                 Spacer(modifier = Modifier.width(4.dp))
                 Column(horizontalAlignment = Alignment.End) {
                     Text(
                         text = "$dailyStreak days",
                         style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
                     )
                     Text(
                         text = "Streak",
-                        style = MaterialTheme.typography.bodySmall
+                        style = MaterialTheme.typography.bodySmall,
                     )
                 }
             }
@@ -231,7 +239,7 @@ fun ExploreTab(
     visitedItems: List<Int>,
     favorites: List<Int>,
     onItemVisited: (Int) -> Unit,
-    onToggleFavorite: (Int) -> Unit
+    onToggleFavorite: (Int) -> Unit,
 ) {
     var selectedCategory by remember { mutableStateOf("All") }
     var showFavoritesOnly by remember { mutableStateOf(false) }
@@ -239,45 +247,49 @@ fun ExploreTab(
 
     val categories = listOf("All", "Technology", "Science", "History", "Arts", "Space", "Nature")
 
-    val filteredItems = knowledgeItems.filter { item ->
-        (selectedCategory == "All" || item.category == selectedCategory) &&
+    val filteredItems =
+        knowledgeItems.filter { item ->
+            (selectedCategory == "All" || item.category == selectedCategory) &&
                 (!showFavoritesOnly || favorites.contains(item.id))
-    }
+        }
 
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-            .verticalScroll(rememberScrollState())
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+                .verticalScroll(rememberScrollState()),
     ) {
         // Daily Featured Discovery
         Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 16.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.tertiaryContainer
-            )
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp),
+            colors =
+                CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                ),
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
                     "✨ Featured Discovery",
                     style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.tertiary
+                    color = MaterialTheme.colorScheme.tertiary,
                 )
                 Text(
                     "The Internet's Weight",
                     style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
                 )
                 Text(
                     "Did you know the entire internet weighs about as much as a strawberry?",
-                    style = MaterialTheme.typography.bodyMedium
+                    style = MaterialTheme.typography.bodyMedium,
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Button(
                     onClick = { /* Jump to item */ },
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary),
                 ) {
                     Text("Read Full Story (+20 XP)")
                 }
@@ -287,16 +299,19 @@ fun ExploreTab(
         // Categories Scroll
         LazyRow(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
         ) {
             items(categories) { category ->
                 FilterChip(
                     selected = selectedCategory == category,
                     onClick = { selectedCategory = category },
                     label = { Text(category) },
-                    leadingIcon = if (selectedCategory == category) {
-                        { Text("✓") }
-                    } else null
+                    leadingIcon =
+                        if (selectedCategory == category) {
+                            { Text("✓") }
+                        } else {
+                            null
+                        },
                 )
             }
         }
@@ -307,27 +322,28 @@ fun ExploreTab(
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Row(
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Checkbox(
                     checked = showFavoritesOnly,
-                    onCheckedChange = { showFavoritesOnly = it }
+                    onCheckedChange = { showFavoritesOnly = it },
                 )
                 Text("Favorites only")
             }
 
             Card(
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.secondaryContainer
-                )
+                colors =
+                    CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    ),
             ) {
                 Text(
                     text = "${filteredItems.size} discoveries",
                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                    style = MaterialTheme.typography.bodySmall
+                    style = MaterialTheme.typography.bodySmall,
                 )
             }
         }
@@ -336,7 +352,7 @@ fun ExploreTab(
 
         // Knowledge Items
         Column(
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             filteredItems.forEach { item ->
                 key(item.id) {
@@ -350,7 +366,7 @@ fun ExploreTab(
                         onItemClick = {
                             selectedItem = item
                             onItemVisited(item.id)
-                        }
+                        },
                     )
                 }
             }
@@ -364,7 +380,7 @@ fun ExploreTab(
             onDismiss = { selectedItem = null },
             onShare = {
                 onPointsEarned(2)
-            }
+            },
         )
     }
 }
@@ -375,54 +391,61 @@ fun InteractiveKnowledgeCard(
     isFavorite: Boolean,
     isVisited: Boolean,
     onFavoriteClick: () -> Unit,
-    onItemClick: () -> Unit
+    onItemClick: () -> Unit,
 ) {
     var scale by remember { mutableStateOf(1f) }
 
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .scale(scale)
-            .animateContentSize(),
-        colors = CardDefaults.cardColors(
-            containerColor = if (isVisited)
-                MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.7f)
-            else MaterialTheme.colorScheme.surface
-        ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = if (isVisited) 2.dp else 4.dp
-        )
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .scale(scale)
+                .animateContentSize(),
+        colors =
+            CardDefaults.cardColors(
+                containerColor =
+                    if (isVisited) {
+                        MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.7f)
+                    } else {
+                        MaterialTheme.colorScheme.surface
+                    },
+            ),
+        elevation =
+            CardDefaults.cardElevation(
+                defaultElevation = if (isVisited) 2.dp else 4.dp,
+            ),
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Row(
                     modifier = Modifier.weight(1f),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
                         text = item.emoji,
                         fontSize = 28.sp,
-                        modifier = Modifier.padding(end = 8.dp)
+                        modifier = Modifier.padding(end = 8.dp),
                     )
 
                     Column {
                         Text(
                             text = item.title,
                             style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.SemiBold
+                            fontWeight = FontWeight.SemiBold,
                         )
                         Text(
                             text = item.category,
                             style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.primary
+                            color = MaterialTheme.colorScheme.primary,
                         )
                     }
                 }
@@ -432,7 +455,7 @@ fun InteractiveKnowledgeCard(
                         Text(
                             text = "✓",
                             fontSize = 20.sp,
-                            color = MaterialTheme.colorScheme.primary
+                            color = MaterialTheme.colorScheme.primary,
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                     }
@@ -442,12 +465,12 @@ fun InteractiveKnowledgeCard(
                             scale = 1.2f
                             onFavoriteClick()
                             scale = 1f
-                        }
+                        },
                     ) {
                         Text(
                             text = if (isFavorite) "★" else "☆",
                             fontSize = 24.sp,
-                            color = if (isFavorite) Color(0xFFFFD700) else Color.Gray
+                            color = if (isFavorite) Color(0xFFFFD700) else Color.Gray,
                         )
                     }
                 }
@@ -457,7 +480,7 @@ fun InteractiveKnowledgeCard(
 
             Text(
                 text = item.description.take(100) + "...",
-                style = MaterialTheme.typography.bodyMedium
+                style = MaterialTheme.typography.bodyMedium,
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -469,9 +492,10 @@ fun InteractiveKnowledgeCard(
                     scale = 1f
                 },
                 modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary
-                )
+                colors =
+                    ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                    ),
             ) {
                 Text("Learn More (+10 XP)")
             }
@@ -483,7 +507,7 @@ fun InteractiveKnowledgeCard(
 fun KnowledgeDetailDialog(
     item: KnowledgeItem,
     onDismiss: () -> Unit,
-    onShare: () -> Unit
+    onShare: () -> Unit,
 ) {
     var showMoreFacts by remember { mutableStateOf(false) }
 
@@ -500,7 +524,7 @@ fun KnowledgeDetailDialog(
             Column {
                 Text(
                     text = item.description,
-                    style = MaterialTheme.typography.bodyLarge
+                    style = MaterialTheme.typography.bodyLarge,
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -509,12 +533,12 @@ fun KnowledgeDetailDialog(
                     Surface(
                         color = MaterialTheme.colorScheme.primaryContainer,
                         shape = RoundedCornerShape(8.dp),
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
                     ) {
                         Text(
                             text = "✨ Bonus: This fact has been viewed ${(100..1000).random()} times by other learners!",
                             modifier = Modifier.padding(12.dp),
-                            style = MaterialTheme.typography.bodyMedium
+                            style = MaterialTheme.typography.bodyMedium,
                         )
                     }
                 }
@@ -523,7 +547,7 @@ fun KnowledgeDetailDialog(
 
                 Button(
                     onClick = { showMoreFacts = !showMoreFacts },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
                 ) {
                     Text(if (showMoreFacts) "Hide bonus" else "Show bonus fact")
                 }
@@ -539,11 +563,11 @@ fun KnowledgeDetailDialog(
                 onClick = {
                     onShare()
                     onDismiss()
-                }
+                },
             ) {
                 Text("Share (+2 XP)")
             }
-        }
+        },
     )
 }
 
@@ -551,7 +575,7 @@ fun KnowledgeDetailDialog(
 fun QuizTab(
     quizzes: List<Quiz>,
     completedQuizzes: List<Int>,
-    onQuizCompleted: (Int, Int) -> Unit
+    onQuizCompleted: (Int, Int) -> Unit,
 ) {
     var currentQuizIndex by remember { mutableIntStateOf(0) }
     var selectedAnswer by remember { mutableStateOf<Int?>(null) }
@@ -562,22 +586,24 @@ fun QuizTab(
     val isCompleted = completedQuizzes.contains(currentQuiz.id)
 
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-            .verticalScroll(rememberScrollState()),
-        horizontalAlignment = Alignment.CenterHorizontally
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+                .verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         // Progress indicator - FIXED: removed lambda
         LinearProgressIndicator(
-        progress = { (currentQuizIndex + 1) / quizzes.size.toFloat() },
-        modifier = Modifier
-                        .fillMaxWidth()
-                        .height(8.dp)
-                        .clip(RoundedCornerShape(4.dp)),
-        color = ProgressIndicatorDefaults.linearColor,
-        trackColor = ProgressIndicatorDefaults.linearTrackColor,
-        strokeCap = ProgressIndicatorDefaults.LinearStrokeCap,
+            progress = { (currentQuizIndex + 1) / quizzes.size.toFloat() },
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .height(8.dp)
+                    .clip(RoundedCornerShape(4.dp)),
+            color = ProgressIndicatorDefaults.linearColor,
+            trackColor = ProgressIndicatorDefaults.linearTrackColor,
+            strokeCap = ProgressIndicatorDefaults.LinearStrokeCap,
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -585,24 +611,26 @@ fun QuizTab(
         // Quiz header
         Card(
             modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer
-            )
+            colors =
+                CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                ),
         ) {
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(12.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(12.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
             ) {
                 Text(
                     text = "Quiz ${currentQuizIndex + 1}/${quizzes.size}",
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
                 )
                 Text(
                     text = "${currentQuiz.points} XP",
                     color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
                 )
             }
         }
@@ -612,13 +640,13 @@ fun QuizTab(
         // Question
         Card(
             modifier = Modifier.fillMaxWidth(),
-            elevation = CardDefaults.cardElevation(4.dp)
+            elevation = CardDefaults.cardElevation(4.dp),
         ) {
             Text(
                 text = currentQuiz.question,
                 style = MaterialTheme.typography.headlineSmall,
                 modifier = Modifier.padding(24.dp),
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
             )
         }
 
@@ -627,43 +655,47 @@ fun QuizTab(
         // Answers
         currentQuiz.options.forEachIndexed { index, option ->
             Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 4.dp)
-                    .scale(if (selectedAnswer == index && !showResult) 1.02f else 1f)
-                    .animateContentSize(animationSpec = tween(durationMillis = 300)),
-                colors = CardDefaults.cardColors(
-                    containerColor = when {
-                        showResult && index == currentQuiz.correctAnswer ->
-                            Color(0xFF4CAF50).copy(alpha = 0.3f)
-                        showResult && selectedAnswer == index && index != currentQuiz.correctAnswer ->
-                            Color(0xFFF44336).copy(alpha = 0.3f)
-                        selectedAnswer == index ->
-                            MaterialTheme.colorScheme.primaryContainer
-                        else ->
-                            MaterialTheme.colorScheme.surface
-                    }
-                ),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp)
+                        .scale(if (selectedAnswer == index && !showResult) 1.02f else 1f)
+                        .animateContentSize(animationSpec = tween(durationMillis = 300)),
+                colors =
+                    CardDefaults.cardColors(
+                        containerColor =
+                            when {
+                                showResult && index == currentQuiz.correctAnswer ->
+                                    Color(0xFF4CAF50).copy(alpha = 0.3f)
+                                showResult && selectedAnswer == index && index != currentQuiz.correctAnswer ->
+                                    Color(0xFFF44336).copy(alpha = 0.3f)
+                                selectedAnswer == index ->
+                                    MaterialTheme.colorScheme.primaryContainer
+                                else ->
+                                    MaterialTheme.colorScheme.surface
+                            },
+                    ),
                 onClick = {
                     if (!showResult) {
                         selectedAnswer = index
                     }
-                }
+                },
             ) {
                 Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
                         text = "${('A' + index)}.",
                         fontWeight = FontWeight.Bold,
-                        modifier = Modifier.width(30.dp)
+                        modifier = Modifier.width(30.dp),
                     )
                     Text(
                         text = option,
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
                     )
                     if (showResult && index == currentQuiz.correctAnswer) {
                         Text("✓", color = Color(0xFF4CAF50), fontSize = 20.sp)
@@ -691,21 +723,21 @@ fun QuizTab(
                     }
                 },
                 modifier = Modifier.fillMaxWidth(),
-                enabled = selectedAnswer != null
+                enabled = selectedAnswer != null,
             ) {
                 Text("Check Answer")
             }
         } else {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 OutlinedButton(
                     onClick = {
                         selectedAnswer = null
                         showResult = false
                     },
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
                 ) {
                     Text("Try Again")
                 }
@@ -719,7 +751,7 @@ fun QuizTab(
                         }
                     },
                     modifier = Modifier.weight(1f),
-                    enabled = currentQuizIndex < quizzes.size - 1
+                    enabled = currentQuizIndex < quizzes.size - 1,
                 ) {
                     Text("Next Quiz")
                 }
@@ -731,18 +763,25 @@ fun QuizTab(
             Spacer(modifier = Modifier.height(16.dp))
 
             Card(
-                colors = CardDefaults.cardColors(
-                    containerColor = if (isCorrect)
-                        Color(0xFF4CAF50).copy(alpha = 0.1f)
-                    else Color(0xFFF44336).copy(alpha = 0.1f)
-                )
+                colors =
+                    CardDefaults.cardColors(
+                        containerColor =
+                            if (isCorrect) {
+                                Color(0xFF4CAF50).copy(alpha = 0.1f)
+                            } else {
+                                Color(0xFFF44336).copy(alpha = 0.1f)
+                            },
+                    ),
             ) {
                 Text(
-                    text = if (isCorrect)
-                        "🎉 Correct! +${currentQuiz.points} XP"
-                    else "❌ Not quite right. Keep learning!",
+                    text =
+                        if (isCorrect) {
+                            "🎉 Correct! +${currentQuiz.points} XP"
+                        } else {
+                            "❌ Not quite right. Keep learning!"
+                        },
                     modifier = Modifier.padding(16.dp),
-                    style = MaterialTheme.typography.titleMedium
+                    style = MaterialTheme.typography.titleMedium,
                 )
             }
         }
@@ -752,36 +791,40 @@ fun QuizTab(
 @Composable
 fun DidYouKnowTab(
     funFacts: List<String>,
-    onPointsEarned: (Int) -> Unit
+    onPointsEarned: (Int) -> Unit,
 ) {
     var currentFactIndex by remember { mutableIntStateOf(0) }
 
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-            .verticalScroll(rememberScrollState()),
-        horizontalAlignment = Alignment.CenterHorizontally
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+                .verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer
-            )
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+            colors =
+                CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                ),
         ) {
             Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(24.dp),
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
+                verticalArrangement = Arrangement.Center,
             ) {
                 Text(
                     text = "💡",
                     fontSize = 80.sp,
-                    modifier = Modifier.animateContentSize()
+                    modifier = Modifier.animateContentSize(),
                 )
 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -791,12 +834,12 @@ fun DidYouKnowTab(
                     transitionSpec = {
                         (fadeIn() + slideInVertically()).togetherWith(fadeOut() + slideOutVertically())
                     },
-                    label = "fact_animation"
+                    label = "fact_animation",
                 ) { fact ->
                     Text(
                         text = fact,
                         style = MaterialTheme.typography.headlineSmall,
-                        textAlign = TextAlign.Center
+                        textAlign = TextAlign.Center,
                     )
                 }
             }
@@ -806,18 +849,18 @@ fun DidYouKnowTab(
 
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Button(
                 onClick = { onPointsEarned(5) },
                 modifier = Modifier.weight(1f),
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
             ) {
                 Text("⭐ Collect Fact")
             }
             OutlinedButton(
                 onClick = { onPointsEarned(2) },
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
             ) {
                 Text("📤 Share")
             }
@@ -827,7 +870,7 @@ fun DidYouKnowTab(
 
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             OutlinedButton(
                 onClick = {
@@ -836,7 +879,7 @@ fun DidYouKnowTab(
                     }
                 },
                 modifier = Modifier.weight(1f),
-                enabled = currentFactIndex > 0
+                enabled = currentFactIndex > 0,
             ) {
                 Text("← Previous")
             }
@@ -850,7 +893,7 @@ fun DidYouKnowTab(
                     }
                     onPointsEarned(1)
                 },
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
             ) {
                 Text(if (currentFactIndex < funFacts.size - 1) "Next →" else "Start Over")
             }
@@ -860,7 +903,7 @@ fun DidYouKnowTab(
 
         Text(
             text = "Fact ${currentFactIndex + 1}/${funFacts.size}",
-            style = MaterialTheme.typography.bodySmall
+            style = MaterialTheme.typography.bodySmall,
         )
     }
 }
@@ -871,164 +914,176 @@ fun StatsTab(
     dailyStreak: Int,
     visitedItems: List<Int>,
     favorites: List<Int>,
-    completedQuizzes: List<Int>
+    completedQuizzes: List<Int>,
 ) {
     val level = (userPoints / 100) + 1
     val nextLevelPoints = level * 100
     val progressToNextLevel = (userPoints % 100) / 100f
 
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-            .verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+                .verticalScroll(rememberScrollState()),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-            // Level Card
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer
-                )
-            ) {
-                Column(
-                    modifier = Modifier.padding(20.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = "Level $level",
-                        style = MaterialTheme.typography.headlineMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    LinearProgressIndicator(
-                        progress = progressToNextLevel,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(12.dp)
-                            .clip(RoundedCornerShape(6.dp))
-                    )
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Text(
-                        text = "$userPoints / $nextLevelPoints XP to next level",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                }
-            }
-
-            // Stats Grid
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                StatCard("🔥", "Streak", "$dailyStreak days", Modifier.weight(1f))
-                StatCard("📚", "Explored", "${visitedItems.size} facts", Modifier.weight(1f))
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                StatCard("⭐", "Favorites", "${favorites.size} items", Modifier.weight(1f))
-                StatCard("📝", "Quizzes", "${completedQuizzes.size} done", Modifier.weight(1f))
-            }
-
-            // Achievements
-            Card(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp)
-                ) {
-                    Text(
-                        text = "🏆 Achievements",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold
-                    )
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    AchievementRow(
-                        achieved = visitedItems.size >= 5,
-                        title = "Curious Mind",
-                        description = "Explore 5 facts"
-                    )
-
-                    AchievementRow(
-                        achieved = favorites.size >= 3,
-                        title = "Collector",
-                        description = "Save 3 favorites"
-                    )
-
-                    AchievementRow(
-                        achieved = completedQuizzes.size >= 3,
-                        title = "Quiz Master",
-                        description = "Complete 3 quizzes"
-                    )
-
-                    AchievementRow(
-                        achieved = userPoints >= 100,
-                        title = "Knowledge Seeker",
-                        description = "Earn 100 XP"
-                    )
-
-                    AchievementRow(
-                        achieved = dailyStreak >= 3,
-                        title = "Consistent Learner",
-                        description = "3-day streak"
-                    )
-                }
-            }
-
-            // Fun fact about their stats
-            Card(
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.secondaryContainer
-                )
+        // Level Card
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors =
+                CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                ),
+        ) {
+            Column(
+                modifier = Modifier.padding(20.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
-                    text = when {
+                    text = "Level $level",
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold,
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                LinearProgressIndicator(
+                    progress = progressToNextLevel,
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .height(12.dp)
+                            .clip(RoundedCornerShape(6.dp)),
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Text(
+                    text = "$userPoints / $nextLevelPoints XP to next level",
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            }
+        }
+
+        // Stats Grid
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            StatCard("🔥", "Streak", "$dailyStreak days", Modifier.weight(1f))
+            StatCard("📚", "Explored", "${visitedItems.size} facts", Modifier.weight(1f))
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            StatCard("⭐", "Favorites", "${favorites.size} items", Modifier.weight(1f))
+            StatCard("📝", "Quizzes", "${completedQuizzes.size} done", Modifier.weight(1f))
+        }
+
+        // Achievements
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+            ) {
+                Text(
+                    text = "🏆 Achievements",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                AchievementRow(
+                    achieved = visitedItems.size >= 5,
+                    title = "Curious Mind",
+                    description = "Explore 5 facts",
+                )
+
+                AchievementRow(
+                    achieved = favorites.size >= 3,
+                    title = "Collector",
+                    description = "Save 3 favorites",
+                )
+
+                AchievementRow(
+                    achieved = completedQuizzes.size >= 3,
+                    title = "Quiz Master",
+                    description = "Complete 3 quizzes",
+                )
+
+                AchievementRow(
+                    achieved = userPoints >= 100,
+                    title = "Knowledge Seeker",
+                    description = "Earn 100 XP",
+                )
+
+                AchievementRow(
+                    achieved = dailyStreak >= 3,
+                    title = "Consistent Learner",
+                    description = "3-day streak",
+                )
+            }
+        }
+
+        // Fun fact about their stats
+        Card(
+            colors =
+                CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                ),
+        ) {
+            Text(
+                text =
+                    when {
                         visitedItems.isEmpty() -> "Start exploring to unlock more stats! 🚀"
                         visitedItems.size == 1 -> "You've taken your first step into knowledge! 🌟"
                         visitedItems.size < 5 -> "You're building your knowledge base! Keep going! 📚"
                         else -> "You're a knowledge explorer! ${visitedItems.size} facts and counting! 🌎"
                     },
-                    modifier = Modifier.padding(16.dp),
-                    style = MaterialTheme.typography.bodyLarge
-                )
-            }
+                modifier = Modifier.padding(16.dp),
+                style = MaterialTheme.typography.bodyLarge,
+            )
+        }
     }
 }
 
 @Composable
-fun StatCard(emoji: String, label: String, value: String, modifier: Modifier = Modifier) {
+fun StatCard(
+    emoji: String,
+    label: String,
+    value: String,
+    modifier: Modifier = Modifier,
+) {
     Card(
         modifier = modifier,
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
-        )
+        colors =
+            CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant,
+            ),
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Text(emoji, fontSize = 24.sp)
             Text(
                 text = value,
                 style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
             )
             Text(
                 text = label,
-                style = MaterialTheme.typography.bodySmall
+                style = MaterialTheme.typography.bodySmall,
             )
         }
     }
@@ -1038,29 +1093,30 @@ fun StatCard(emoji: String, label: String, value: String, modifier: Modifier = M
 fun AchievementRow(
     achieved: Boolean,
     title: String,
-    description: String
+    description: String,
 ) {
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
             text = if (achieved) "✅" else "⬜",
             fontSize = 20.sp,
-            modifier = Modifier.width(32.dp)
+            modifier = Modifier.width(32.dp),
         )
         Column {
             Text(
                 text = title,
                 style = MaterialTheme.typography.titleSmall,
-                color = if (achieved) MaterialTheme.colorScheme.primary else Color.Gray
+                color = if (achieved) MaterialTheme.colorScheme.primary else Color.Gray,
             )
             Text(
                 text = description,
                 style = MaterialTheme.typography.bodySmall,
-                color = Color.Gray
+                color = Color.Gray,
             )
         }
     }

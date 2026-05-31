@@ -14,7 +14,11 @@ class AuthViewModel : ViewModel() {
     private val _uiState = MutableStateFlow<AuthUiState>(AuthUiState.Idle)
     val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
 
-    fun login(email: String, password: String, onLoginSuccess: () -> Unit) {
+    fun login(
+        email: String,
+        password: String,
+        onLoginSuccess: () -> Unit,
+    ) {
         if (email.isBlank() || password.isBlank()) {
             _uiState.value = AuthUiState.Error("Please fill in all fields")
             return
@@ -40,7 +44,10 @@ class AuthViewModel : ViewModel() {
 
 sealed class AuthUiState {
     object Idle : AuthUiState()
+
     object Loading : AuthUiState()
+
     object Success : AuthUiState()
+
     data class Error(val message: String) : AuthUiState()
 }
