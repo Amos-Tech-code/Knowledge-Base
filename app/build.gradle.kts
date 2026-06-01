@@ -4,8 +4,8 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.google.services)
-    id("org.jlleitschuh.gradle.ktlint")
-    id("io.gitlab.arturbosch.detekt")
+    alias(libs.plugins.ktlint)
+    alias(libs.plugins.detekt)
 }
 
 android {
@@ -80,9 +80,9 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 
     // Detekt plugins for additional rules
-    detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.23.7")
-    detektPlugins("io.gitlab.arturbosch.detekt:detekt-rules-libraries:1.23.7")
-    detektPlugins("com.twitter.compose.rules:detekt:0.0.26")
+    detektPlugins(libs.detekt.formatting)
+    detektPlugins(libs.detekt.rules.libraries)
+    detektPlugins(libs.detekt.compose.rules)
 }
 
 // Bump version
