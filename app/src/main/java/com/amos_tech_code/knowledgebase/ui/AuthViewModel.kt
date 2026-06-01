@@ -33,6 +33,25 @@ class AuthViewModel : ViewModel() {
         }
     }
 
+    fun register(email: String, password: String, onRegisterSuccess: () -> Unit) {
+        if (email.isBlank() || password.isBlank()) {
+            _uiState.value = AuthUiState.Error("Please fill in all fields")
+            return
+        }
+
+        _uiState.value = AuthUiState.Loading
+        viewModelScope.launch {
+            auth.createUserWithEmailAndPassword(email, password)
+                .addOnSuccessListener {
+                    _uiState.value = AuthUiState.Success
+                    onRegisterSuccess()
+                }
+                .addOnFailureListener {
+                    _uiState.value = AuthUiState.Error(it.localizedMessage ?: "Registration failed")
+                }
+        }
+    }
+
     fun clearError() {
         _uiState.value = AuthUiState.Idle
     }

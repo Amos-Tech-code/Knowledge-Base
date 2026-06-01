@@ -1,6 +1,7 @@
 package com.amos_tech_code.knowledgebase
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -10,7 +11,6 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
@@ -22,10 +22,12 @@ import androidx.navigation.compose.rememberNavController
 import com.amos_tech_code.knowledgebase.notifications.ReminderWorker
 import com.amos_tech_code.knowledgebase.ui.KnowledgeBaseApp
 import com.amos_tech_code.knowledgebase.ui.LoginScreen
+import com.amos_tech_code.knowledgebase.ui.RegisterScreen
 import com.amos_tech_code.knowledgebase.ui.theme.KnowledgeBaseTheme
 import com.google.firebase.auth.FirebaseAuth
 
 class MainActivity : ComponentActivity() {
+    @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
@@ -45,7 +47,7 @@ class MainActivity : ComponentActivity() {
                 // Request notification permission for Android 13+
                 val launcher = rememberLauncherForActivityResult(
                     ActivityResultContracts.RequestPermission()
-                ) { isGranted ->
+                ) { _ ->
                     // Handle permission result if needed
                 }
 
@@ -61,11 +63,11 @@ class MainActivity : ComponentActivity() {
                     }
                 }
                 
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+                Scaffold {
                     NavHost(
                         navController = navController,
                         startDestination = if (currentUser != null) "main" else "login",
-                        modifier = Modifier.padding(innerPadding)
+                        modifier = Modifier.fillMaxSize()
                     ) {
                         composable("login") {
                             LoginScreen(
@@ -74,11 +76,34 @@ class MainActivity : ComponentActivity() {
                                     navController.navigate("main") {
                                         popUpTo("login") { inclusive = true }
                                     }
+                                },
+                                onNavigateToRegister = {
+                                    navController.navigate("register")
+                                }
+                            )
+                        }
+                        composable("register") {
+                            RegisterScreen(
+                                onRegisterSuccess = {
+                                    DailyTracker.recordDailyVisit(context)
+                                    navController.navigate("main") {
+                                        popUpTo("register") { inclusive = true }
+                                        popUpTo("login") { inclusive = true }
+                                    }
+                                },
+                                onNavigateToLogin = {
+                                    navController.popBackStack()
                                 }
                             )
                         }
                         composable("main") {
-                            KnowledgeBaseApp()
+                            KnowledgeBaseApp(
+                                onLogout = {
+                                    navController.navigate("login") {
+                                        popUpTo("main") { inclusive = true }
+                                    }
+                                }
+                            )
                         }
                     }
                 }

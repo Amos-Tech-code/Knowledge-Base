@@ -15,6 +15,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -31,13 +32,14 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
-fun LoginScreen(
-    onLoginSuccess: () -> Unit,
-    onNavigateToRegister: () -> Unit,
+fun RegisterScreen(
+    onRegisterSuccess: () -> Unit,
+    onNavigateToLogin: () -> Unit,
     viewModel: AuthViewModel = viewModel()
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -49,14 +51,14 @@ fun LoginScreen(
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "Welcome Back! 🚀",
+            text = "Join Knowledge Base! 🚀",
             style = MaterialTheme.typography.headlineLarge,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.primary
         )
-        
+
         Text(
-            text = "Log in to continue your learning journey.",
+            text = "Create an account to start your learning journey.",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(bottom = 32.dp)
@@ -64,7 +66,7 @@ fun LoginScreen(
 
         OutlinedTextField(
             value = email,
-            onValueChange = { 
+            onValueChange = {
                 email = it
                 viewModel.clearError()
             },
@@ -78,7 +80,7 @@ fun LoginScreen(
 
         OutlinedTextField(
             value = password,
-            onValueChange = { 
+            onValueChange = {
                 password = it
                 viewModel.clearError()
             },
@@ -90,12 +92,35 @@ fun LoginScreen(
                     Text(if (passwordVisible) "👁️" else "🕶️")
                 }
             },
-            singleLine = true
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        OutlinedTextField(
+            value = confirmPassword,
+            onValueChange = {
+                confirmPassword = it
+                viewModel.clearError()
+            },
+            label = { Text("Confirm Password") },
+            modifier = Modifier.fillMaxWidth(),
+            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done)
         )
 
         if (uiState is AuthUiState.Error) {
             Text(
                 text = (uiState as AuthUiState.Error).message,
+                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier.padding(top = 8.dp),
+                style = MaterialTheme.typography.bodySmall
+            )
+        } else if (password != confirmPassword && confirmPassword.isNotEmpty()) {
+            Text(
+                text = "Passwords do not match",
                 color = MaterialTheme.colorScheme.error,
                 modifier = Modifier.padding(top = 8.dp),
                 style = MaterialTheme.typography.bodySmall
@@ -106,10 +131,12 @@ fun LoginScreen(
 
         Button(
             onClick = {
-                viewModel.login(email, password, onLoginSuccess)
+                if (password == confirmPassword) {
+                    viewModel.register(email, password, onRegisterSuccess)
+                }
             },
             modifier = Modifier.fillMaxWidth(),
-            enabled = uiState !is AuthUiState.Loading
+            enabled = uiState !is AuthUiState.Loading && password == confirmPassword && email.isNotEmpty() && password.isNotEmpty()
         ) {
             if (uiState is AuthUiState.Loading) {
                 CircularProgressIndicator(
@@ -118,14 +145,14 @@ fun LoginScreen(
                     strokeWidth = 2.dp
                 )
             } else {
-                Text("Login")
+                Text("Register")
             }
         }
-        
+
         Spacer(modifier = Modifier.height(16.dp))
-        
-        androidx.compose.material3.TextButton(onClick = onNavigateToRegister) {
-            Text("Don't have an account? Register here")
+
+        TextButton(onClick = onNavigateToLogin) {
+            Text("Already have an account? Login here")
         }
     }
 }

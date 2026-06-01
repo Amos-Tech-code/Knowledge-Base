@@ -28,17 +28,21 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.ProgressIndicatorDefaults
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -51,15 +55,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.google.firebase.auth.FirebaseAuth
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun KnowledgeBaseApp(
+    onLogout: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: KnowledgeViewModel = viewModel()
 ) {
@@ -71,6 +79,8 @@ fun KnowledgeBaseApp(
     val visitedItems = viewModel.visitedItems
     val favorites = viewModel.favorites
     val completedQuizzes = viewModel.completedQuizzes
+
+    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
     // Daily Reward Dialog
     if (!hasClaimedDaily) {
@@ -88,137 +98,114 @@ fun KnowledgeBaseApp(
         )
     }
 
-    Column(
+    Scaffold(
         modifier = modifier
             .fillMaxSize()
-    ) {
-        // Enhanced Header with Gamification
-        HeaderSection(
-            userPoints = userPoints,
-            dailyStreak = dailyStreak
-        )
-
-        // Tab Row
-        TabRow(
-            selectedTabIndex = selectedTab,
-            containerColor = MaterialTheme.colorScheme.surface,
-            contentColor = MaterialTheme.colorScheme.primary
-        ) {
-            Tab(
-                selected = selectedTab == 0,
-                onClick = { selectedTab = 0 },
-                text = { Text("Explore") },
-                icon = { Text("🔍") }
-            )
-            Tab(
-                selected = selectedTab == 1,
-                onClick = { selectedTab = 1 },
-                text = { Text("Daily Quiz") },
-                icon = { Text("📝") }
-            )
-            Tab(
-                selected = selectedTab == 2,
-                onClick = { selectedTab = 2 },
-                text = { Text("Did You Know?") },
-                icon = { Text("💡") }
-            )
-            Tab(
-                selected = selectedTab == 3,
-                onClick = { selectedTab = 3 },
-                text = { Text("Stats") },
-                icon = { Text("📊") }
-            )
-        }
-
-        // Content based on selected tab
-        when (selectedTab) {
-            0 -> ExploreTab(
-                knowledgeItems = DummyData.knowledgeItems,
-                onPointsEarned = { viewModel.earnPoints(it) },
-                visitedItems = visitedItems,
-                favorites = favorites,
-                onItemVisited = { viewModel.markAsVisited(it) },
-                onToggleFavorite = { viewModel.toggleFavorite(it) }
-            )
-            1 -> QuizTab(
-                quizzes = DummyData.quizzes,
-                completedQuizzes = completedQuizzes,
-                onQuizCompleted = { quizId, points ->
-                    viewModel.completeQuiz(quizId, points)
-                }
-            )
-            2 -> DidYouKnowTab(
-                funFacts = DummyData.funFacts,
-                onPointsEarned = { viewModel.earnPoints(it) }
-            )
-            3 -> StatsTab(
-                userPoints = userPoints,
-                dailyStreak = dailyStreak,
-                visitedItems = visitedItems,
-                favorites = favorites,
-                completedQuizzes = completedQuizzes
-            )
-        }
-    }
-}
-
-@Composable
-fun HeaderSection(
-    userPoints: Int,
-    dailyStreak: Int
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer
-        )
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = "🏆",
-                    fontSize = 24.sp,
-                    modifier = Modifier.animateContentSize()
+            .nestedScroll(scrollBehavior.nestedScrollConnection),
+        topBar = {
+            TopAppBar(
+                title = {
+                    Column {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(text = "🏆", fontSize = 24.sp)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "$userPoints XP",
+                                style = MaterialTheme.typography.headlineMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                        Text(
+                            text = "🔥 $dailyStreak day streak",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                },
+                actions = {
+                    Button(
+                        onClick = {
+                            FirebaseAuth.getInstance().signOut()
+                            onLogout()
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.errorContainer,
+                            contentColor = MaterialTheme.colorScheme.onErrorContainer
+                        )
+                    ) {
+                        Text("Log Out")
+                    }
+                },
+                scrollBehavior = scrollBehavior,
+                colors = TopAppBarDefaults.largeTopAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    scrolledContainerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
                 )
-                Spacer(modifier = Modifier.width(8.dp))
-                Column {
-                    Text(
-                        text = "$userPoints XP",
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        text = "Knowledge Points",
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                }
+            )
+        },
+        bottomBar = {
+            NavigationBar {
+                NavigationBarItem(
+                    selected = selectedTab == 0,
+                    onClick = { selectedTab = 0 },
+                    icon = { Text("🔍", fontSize = 20.sp) },
+                    label = { Text("Explore") }
+                )
+                NavigationBarItem(
+                    selected = selectedTab == 1,
+                    onClick = { selectedTab = 1 },
+                    icon = { Text("📝", fontSize = 20.sp) },
+                    label = { Text("Quiz") }
+                )
+                NavigationBarItem(
+                    selected = selectedTab == 2,
+                    onClick = { selectedTab = 2 },
+                    icon = { Text("💡", fontSize = 20.sp) },
+                    label = { Text("Facts") }
+                )
+                NavigationBarItem(
+                    selected = selectedTab == 3,
+                    onClick = { selectedTab = 3 },
+                    icon = { Text("📊", fontSize = 20.sp) },
+                    label = { Text("Stats") }
+                )
             }
-
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = "🔥",
-                    fontSize = 24.sp
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
+            // Content based on selected tab
+            when (selectedTab) {
+                0 -> ExploreTab(
+                    knowledgeItems = DummyData.knowledgeItems,
+                    onPointsEarned = { viewModel.earnPoints(it) },
+                    visitedItems = visitedItems,
+                    favorites = favorites,
+                    onItemVisited = { viewModel.markAsVisited(it) },
+                    onToggleFavorite = { viewModel.toggleFavorite(it) }
                 )
-                Spacer(modifier = Modifier.width(4.dp))
-                Column(horizontalAlignment = Alignment.End) {
-                    Text(
-                        text = "$dailyStreak days",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        text = "Streak",
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                }
+                1 -> QuizTab(
+                    quizzes = DummyData.quizzes,
+                    completedQuizzes = completedQuizzes,
+                    onQuizCompleted = { quizId, points ->
+                        viewModel.completeQuiz(quizId, points)
+                    }
+                )
+                2 -> DidYouKnowTab(
+                    funFacts = DummyData.funFacts,
+                    onPointsEarned = { viewModel.earnPoints(it) }
+                )
+                3 -> StatsTab(
+                    userPoints = userPoints,
+                    dailyStreak = dailyStreak,
+                    visitedItems = visitedItems,
+                    favorites = favorites,
+                    completedQuizzes = completedQuizzes
+                )
             }
         }
     }
@@ -244,6 +231,8 @@ fun ExploreTab(
                 (!showFavoritesOnly || favorites.contains(item.id))
     }
 
+    val featuredDiscovery = knowledgeItems.find { it.id == 101 }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -251,35 +240,41 @@ fun ExploreTab(
             .verticalScroll(rememberScrollState())
     ) {
         // Daily Featured Discovery
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 16.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.tertiaryContainer
-            )
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(
-                    "✨ Featured Discovery",
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.tertiary
+        if (featuredDiscovery != null) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.tertiaryContainer
                 )
-                Text(
-                    "The Internet's Weight",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    "Did you know the entire internet weighs about as much as a strawberry?",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Button(
-                    onClick = { /* Jump to item */ },
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
-                ) {
-                    Text("Read Full Story (+20 XP)")
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        "✨ Featured Discovery",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.tertiary
+                    )
+                    Text(
+                        featuredDiscovery.title,
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        featuredDiscovery.description,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Button(
+                        onClick = {
+                            selectedItem = featuredDiscovery
+                            onItemVisited(featuredDiscovery.id)
+                            onPointsEarned(20)
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
+                    ) {
+                        Text("Read Full Story (+20 XP)")
+                    }
                 }
             }
         }
@@ -377,7 +372,7 @@ fun InteractiveKnowledgeCard(
     onFavoriteClick: () -> Unit,
     onItemClick: () -> Unit
 ) {
-    var scale by remember { mutableStateOf(1f) }
+    var scale by remember { androidx.compose.runtime.mutableFloatStateOf(1f) }
 
     Card(
         modifier = Modifier
