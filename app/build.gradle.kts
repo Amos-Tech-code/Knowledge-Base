@@ -22,6 +22,13 @@ val demoApiKey: String = System.getenv("DEMO_API_KEY")          // CI: from GitH
     ?: error("DEMO_API_KEY not found. Set it as an env var (CI) or in local.properties (local dev).")
 // ─────────────────────────────────────────────────────────────────────
 
+fun resolveSecretOrNull(name: String): String? =
+    System.getenv(name)?.takeIf { it.isNotBlank() }
+        ?: localProperties.getProperty(name)?.takeIf { it.isNotBlank() }
+
+fun resolveSecret(name: String): String =
+    resolveSecretOrNull(name)
+        ?: error("Missing secret: $name — add it to local.properties or set it as an env var.")
 
 android {
     namespace = "com.amos_tech_code.knowledgebase"
@@ -37,6 +44,18 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         // ✅ RIGHT: Read secret from local.properties — never hardcoded, never in source control
         buildConfigField("String", "DEMO_API_KEY", "\"$demoApiKey\"")
+    }
+
+    signingConfigs {
+        create("release") {
+            val storeFilePath = resolveSecretOrNull("RELEASE_SIGNING_STORE_FILE")
+            if (storeFilePath != null) {
+                storeFile = file(storeFilePath)
+                storePassword = resolveSecretOrNull("RELEASE_SIGNING_STORE_PASSWORD") ?: ""
+                keyAlias     = resolveSecretOrNull("RELEASE_SIGNING_KEY_ALIAS") ?: ""
+                keyPassword  = resolveSecretOrNull("RELEASE_SIGNING_KEY_PASSWORD") ?: ""
+            }
+        }
     }
 
     buildTypes {
@@ -59,16 +78,20 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
             )
+            signingConfig = signingConfigs.getByName("release")
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+
     buildFeatures {
         compose = true
         buildConfig = true
     }
+
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.3"
     }
