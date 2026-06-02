@@ -1,4 +1,5 @@
 import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
@@ -7,6 +8,20 @@ plugins {
     alias(libs.plugins.ktlint)
     alias(libs.plugins.detekt)
 }
+
+// ── Load local.properties ───────────────────────────────────────────
+val localProperties = Properties().apply {
+    val localPropertiesFile = rootProject.file("local.properties")
+    if (localPropertiesFile.exists()) {
+        load(localPropertiesFile.inputStream())
+    }
+}
+
+val demoApiKey: String = System.getenv("DEMO_API_KEY")          // CI: from GitHub secret
+    ?: localProperties.getProperty("DEMO_API_KEY")               // Local: from local.properties
+    ?: error("DEMO_API_KEY not found. Set it as an env var (CI) or in local.properties (local dev).")
+// ─────────────────────────────────────────────────────────────────────
+
 
 android {
     namespace = "com.amos_tech_code.knowledgebase"
@@ -20,6 +35,8 @@ android {
         versionName = "1.0.5"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        // ✅ RIGHT: Read secret from local.properties — never hardcoded, never in source control
+        buildConfigField("String", "DEMO_API_KEY", "\"$demoApiKey\"")
     }
 
     buildTypes {
@@ -49,6 +66,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.3"

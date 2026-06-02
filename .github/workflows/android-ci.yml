@@ -1,0 +1,28 @@
+name: Android CI
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Build debug APK
+        env:
+          DEMO_API_KEY: ${{ secrets.DEMO_API_KEY }}
+        run: chmod +x ./gradlew && ./gradlew assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v5
+        with:
+          name: debug-apk
+          path: app/build/outputs/apk/debug/*.apk
