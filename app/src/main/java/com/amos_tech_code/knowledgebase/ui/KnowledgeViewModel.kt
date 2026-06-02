@@ -109,7 +109,10 @@ class KnowledgeViewModel(application: Application) : AndroidViewModel(applicatio
         }
     }
 
-    fun completeQuiz(quizId: Int, points: Int) {
+    fun completeQuiz(
+        quizId: Int,
+        points: Int,
+    ) {
         if (!completedQuizzes.contains(quizId)) {
             earnPoints(points)
             viewModelScope.launch {

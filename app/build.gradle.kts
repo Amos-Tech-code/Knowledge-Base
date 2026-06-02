@@ -1,8 +1,27 @@
+import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.google.services)
+    alias(libs.plugins.ktlint)
+    alias(libs.plugins.detekt)
 }
+
+// ── Load local.properties ───────────────────────────────────────────
+val localProperties = Properties().apply {
+    val localPropertiesFile = rootProject.file("local.properties")
+    if (localPropertiesFile.exists()) {
+        load(localPropertiesFile.inputStream())
+    }
+}
+
+val demoApiKey: String = System.getenv("DEMO_API_KEY")          // CI: from GitHub secret
+    ?: localProperties.getProperty("DEMO_API_KEY")               // Local: from local.properties
+    ?: error("DEMO_API_KEY not found. Set it as an env var (CI) or in local.properties (local dev).")
+// ─────────────────────────────────────────────────────────────────────
+
 
 android {
     namespace = "com.amos_tech_code.knowledgebase"
@@ -16,6 +35,8 @@ android {
         versionName = "1.0.5"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        // ✅ RIGHT: Read secret from local.properties — never hardcoded, never in source control
+        buildConfigField("String", "DEMO_API_KEY", "\"$demoApiKey\"")
     }
 
     buildTypes {
@@ -26,7 +47,7 @@ android {
             isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
             signingConfig = signingConfigs.getByName("debug")
         }
@@ -35,7 +56,7 @@ android {
             isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
         }
     }
@@ -45,12 +66,44 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.3"
     }
 }
 
+dependencies {
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.activity.compose)
+    implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.androidx.compose.ui)
+    implementation(libs.androidx.compose.ui.graphics)
+    implementation(libs.androidx.compose.ui.tooling.preview)
+    implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.datastore.preferences)
+    implementation(libs.androidx.work.runtime.ktx)
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.analytics)
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+    debugImplementation(libs.androidx.compose.ui.tooling)
+    debugImplementation(libs.androidx.compose.ui.test.manifest)
+
+    // Detekt plugins for additional rules
+    detektPlugins(libs.detekt.formatting)
+    detektPlugins(libs.detekt.rules.libraries)
+    detektPlugins(libs.detekt.compose.rules)
+}
+
+// Bump version
 tasks.register("bumpVersion") {
     group = "versioning"
     description = "Increments versionCode and versionName (patch version) in build.gradle.kts"
@@ -86,27 +139,62 @@ tasks.register("bumpVersion") {
     }
 }
 
-dependencies {
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.lifecycle.runtime.ktx)
-    implementation(libs.androidx.lifecycle.viewmodel.compose)
-    implementation(libs.androidx.activity.compose)
-    implementation(platform(libs.androidx.compose.bom))
-    implementation(libs.androidx.compose.ui)
-    implementation(libs.androidx.compose.ui.graphics)
-    implementation(libs.androidx.compose.ui.tooling.preview)
-    implementation(libs.androidx.compose.material3)
-    implementation(libs.androidx.navigation.compose)
-    implementation(libs.androidx.datastore.preferences)
-    implementation(libs.androidx.work.runtime.ktx)
-    implementation(platform(libs.firebase.bom))
-    implementation(libs.firebase.auth)
-    implementation(libs.firebase.analytics)
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
-    androidTestImplementation(platform(libs.androidx.compose.bom))
-    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
-    debugImplementation(libs.androidx.compose.ui.tooling)
-    debugImplementation(libs.androidx.compose.ui.test.manifest)
+// ktlint configuration
+ktlint {
+    version = "1.0.1"
+    android = true
+    ignoreFailures = false
+    reporters {
+        reporter(ReporterType.PLAIN)
+        reporter(ReporterType.CHECKSTYLE)
+        reporter(ReporterType.HTML)
+        reporter(ReporterType.JSON)
+    }
+    filter {
+        exclude("**/generated/**")
+        exclude("**/build/**")
+    }
+}
+
+// Detekt configuration
+detekt {
+    // Version of Detekt that will be used
+    toolVersion = "1.23.7"
+
+    // Builds the AST in parallel. Rules are always executed in parallel.
+    parallel = true
+
+    // Define the detekt configuration files
+    config.setFrom(files("$projectDir/../detekt-config.yml"))
+
+    // Adds the baseline file for suppressing known issues
+    baseline = file("$projectDir/detekt-baseline.xml")
+
+    // Turns on all the rules
+    allRules = false
+
+    // Fail build on any finding
+    ignoreFailures = false
+
+    // Android specific setup
+    buildUponDefaultConfig = true
+}
+
+// Configure detekt tasks
+tasks.withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
+    jvmTarget = "11"
+
+    // Exclude build and generated directories
+    exclude("**/build/**", "**/generated/**", "**/resources/**")
+
+    // Include all Kotlin and script files
+    include("**/*.kt", "**/*.kts")
+
+    reports {
+        html.required.set(true)
+        xml.required.set(true)
+        txt.required.set(true)
+        sarif.required.set(true)
+        md.required.set(true)
+    }
 }

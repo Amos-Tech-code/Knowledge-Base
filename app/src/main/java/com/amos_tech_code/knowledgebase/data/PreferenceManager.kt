@@ -10,7 +10,6 @@ import kotlinx.coroutines.flow.map
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "knowledge_base_prefs")
 
 class PreferenceManager(private val context: Context) {
-
     companion object {
         val USER_POINTS = intPreferencesKey("user_points")
         val DAILY_STREAK = intPreferencesKey("daily_streak")
@@ -20,29 +19,35 @@ class PreferenceManager(private val context: Context) {
         val COMPLETED_QUIZZES = stringSetPreferencesKey("completed_quizzes")
     }
 
-    val userPointsFlow: Flow<Int> = context.dataStore.data.map { preferences ->
-        preferences[USER_POINTS] ?: 0
-    }
+    val userPointsFlow: Flow<Int> =
+        context.dataStore.data.map { preferences ->
+            preferences[USER_POINTS] ?: 0
+        }
 
-    val dailyStreakFlow: Flow<Int> = context.dataStore.data.map { preferences ->
-        preferences[DAILY_STREAK] ?: 0
-    }
+    val dailyStreakFlow: Flow<Int> =
+        context.dataStore.data.map { preferences ->
+            preferences[DAILY_STREAK] ?: 0
+        }
 
-    val lastVisitTimestampFlow: Flow<Long> = context.dataStore.data.map { preferences ->
-        preferences[LAST_VISIT_TIMESTAMP] ?: 0L
-    }
+    val lastVisitTimestampFlow: Flow<Long> =
+        context.dataStore.data.map { preferences ->
+            preferences[LAST_VISIT_TIMESTAMP] ?: 0L
+        }
 
-    val visitedItemsFlow: Flow<Set<String>> = context.dataStore.data.map { preferences ->
-        preferences[VISITED_ITEMS] ?: emptySet()
-    }
+    val visitedItemsFlow: Flow<Set<String>> =
+        context.dataStore.data.map { preferences ->
+            preferences[VISITED_ITEMS] ?: emptySet()
+        }
 
-    val favoritesFlow: Flow<Set<String>> = context.dataStore.data.map { preferences ->
-        preferences[FAVORITES] ?: emptySet()
-    }
+    val favoritesFlow: Flow<Set<String>> =
+        context.dataStore.data.map { preferences ->
+            preferences[FAVORITES] ?: emptySet()
+        }
 
-    val completedQuizzesFlow: Flow<Set<String>> = context.dataStore.data.map { preferences ->
-        preferences[COMPLETED_QUIZZES] ?: emptySet()
-    }
+    val completedQuizzesFlow: Flow<Set<String>> =
+        context.dataStore.data.map { preferences ->
+            preferences[COMPLETED_QUIZZES] ?: emptySet()
+        }
 
     suspend fun savePoints(points: Int) {
         context.dataStore.edit { preferences ->
