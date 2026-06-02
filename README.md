@@ -23,6 +23,10 @@ The project includes a robust `.github/workflows/android-ci.yml` pipeline that:
 ### 3. Build Automation
 *   **Custom Versioning:** Includes a custom Gradle task to automate version bumps.
     *   Run: `./gradlew bumpVersion`
+*   **Helper Scripts:** Bash scripts for managing local device deployments:
+    *   `./uninstall_all_variants.sh`: Removes all project variants from the device.
+    *   `./install_all_variants.sh`: Builds and installs all variants (Debug, Release, DebugMinified).
+    *   `./clean_reinstall_all.sh`: Performs a full clean, build, and reinstall cycle.
 *   **Secure Secret Management:** Uses `local.properties` for local development and Environment Variables for CI to keep sensitive data like API keys and signing credentials out of source control.
 
 ## 🛠 Tech Stack
