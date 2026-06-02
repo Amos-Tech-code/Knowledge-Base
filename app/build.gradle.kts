@@ -45,6 +45,7 @@ android {
             matchingFallbacks.add("debug")
             isMinifyEnabled = true
             isShrinkResources = true
+            isDebuggable = false // Add this to enable full optimizations
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
